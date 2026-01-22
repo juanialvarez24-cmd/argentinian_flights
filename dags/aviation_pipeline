@@ -1,0 +1,56 @@
+from airflow import DAG
+from airflow.operators.bash import BashOperator
+from airflow.operators.empty import EmptyOperator
+from datetime import datetime, timedelta
+
+# ===============================================
+# DAG CONFIGURATION
+# ===============================================
+
+default_args = {
+    'owner': 'airflow',
+    'start_date': datetime(2025, 1, 1),
+    'retries': 1,
+    'retry_delay': timedelta(minutes=5),
+}
+
+with DAG(
+    dag_id='aviation_ingestion_and_load',
+    default_args=default_args,
+    description='Pipeline for Ingesting and Loading aviation data into Hive.',
+    schedule_interval=None,
+    catchup=False,
+    tags=['ingest', 'hive', 'spark'],
+) as dag:
+
+    # 1. Start anchor
+    start_pipeline = EmptyOperator(
+        task_id='start_pipeline',
+    )
+
+    # 2. Ingest data to HDFS using Shell script
+    ingest_hdfs = BashOperator(
+        task_id='ingest_hdfs',
+        bash_command=" -c 'bash /home/hadoop/scripts/ingest.sh'",
+    )
+
+    # 3. Process and load to Hive using Spark
+    load_to_hive = BashOperator(
+        task_id='load_to_hive',
+        bash_command=f"""
+                ssh hadoop@172.17.0.2 /home/hadoop/spark/bin/spark-submit \
+                --files /home/hadoop/hive/conf/hive-site.xml \
+                /home/hadoop/scripts/transform_and_load.py
+                """,
+    )
+
+    # 4. End anchor
+    end_pipeline = EmptyOperator(
+        task_id='end_pipeline',
+    )
+
+    # ===============================================
+    # TASK DEPENDENCIES
+    # ===============================================
+
+    start_pipeline >> ingest_hdfs >> load_to_hive >> end_pipeline
