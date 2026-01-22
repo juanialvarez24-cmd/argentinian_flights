@@ -24,20 +24,20 @@ The pipeline follows a modern Big Data architecture:
 ## 📂 Project Structure
 ```text
 ├── dags/
-│   └── aviation_pipeline.py       # Airflow DAG defining the workflow
-├── reports/
+│   └── aviation_pipeline.py                 # Airflow DAG defining the workflow
+├── reports/                                 # Visualizations
 │   ├── airports_with_most_passengers.png
 │   ├── flights_per_airport.png
 │   ├── most_traveled_routes.png
 │   └── passengers_per_month.png
-├── scripts/
-│   ├── ingest.sh                  # Ingestion: Local/API to HDFS
-│   └── transform_and_load.py      # Transformation: HDFS to Hive
-├── sql/
+├── scripts/                                  # Core logic and processing
+│   ├── ingest_data.sh                        # Ingestion to HDFS
+│   └── transform_and_load.py                 # Transformation: HDFS to Hive
+├── sql/                                      # SQL Layer
 │   ├── ddl/          
-│   │   └── hive_tables.hql       # Hive DDL (Table schemas)
+│   │   └── hive_tables.hql                   # Hive DDL (Table schemas)
 │   └── queries/
-│       └── analysis_queries.sql
+│       └── analysis_queries.sql              # Business Intelligence queries
 ├── .gitignore
 ├── LICENSE
 └── README.md
